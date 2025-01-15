@@ -26,10 +26,10 @@ func (m *LoggingHandleModule) SetSuccessor(successor internal.MessageHandleModul
 }
 
 // ProcessMessage implements internal.MessageHandleModule.
-func (m *LoggingHandleModule) ProcessMessage(ctx *internal.Context, message *postgres.Message, state internal.ProcessingState, recover *internal.Recover) error {
+func (m *LoggingHandleModule) ProcessMessage(ctx *internal.Context, message *postgres.Message, state internal.ProcessingState, recover *internal.Recover) {
 	if m.successor != nil {
-		if !ctx.IsRecordingLog() {
-			return nil
+		if !ctx.CanRecordingLog() {
+			return
 		}
 
 		evidence := EventEvidence{
@@ -43,7 +43,7 @@ func (m *LoggingHandleModule) ProcessMessage(ctx *internal.Context, message *pos
 		internal.GlobalMessageDelegateHelper.Restrict(message)
 		eventLog.OnProcessMessage(message)
 
-		return recover.
+		recover.
 			Defer(func(err interface{}) {
 				if err != nil {
 					defer func() {
@@ -66,13 +66,13 @@ func (m *LoggingHandleModule) ProcessMessage(ctx *internal.Context, message *pos
 					eventLog.OnProcessMessageComplete(message, reply)
 				}
 			}).
-			Do(func(f internal.Finalizer) error {
+			Do(func(f internal.Finalizer) {
 				// NOTE restrict call Finish(), Requeue(), Touch()
 				internal.GlobalMessageDelegateHelper.Restrict(message)
-				return m.successor.ProcessMessage(ctx, message, state, recover)
+				m.successor.ProcessMessage(ctx, message, state, recover)
 			})
 	}
-	return nil
+	return
 }
 
 // OnInitComplete implements internal.MessageHandleModule.

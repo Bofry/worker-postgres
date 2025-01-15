@@ -1,6 +1,8 @@
 package internal
 
-import "sync/atomic"
+import (
+	"sync/atomic"
+)
 
 type Defer struct {
 	recover *Recover
@@ -8,7 +10,7 @@ type Defer struct {
 	finally []func(err interface{})
 }
 
-func (d *Defer) Do(do func(f Finalizer) error) error {
+func (d *Defer) Do(do func(f Finalizer)) {
 	if d != nil {
 		defer func(f Finalizer) {
 			var err interface{} = nil
@@ -23,7 +25,7 @@ func (d *Defer) Do(do func(f Finalizer) error) error {
 			f.run(err)
 		}(Finalizer{d})
 	}
-	return do(Finalizer{d})
+	do(Finalizer{d})
 }
 
 type Finalizer struct {

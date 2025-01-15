@@ -76,7 +76,7 @@ type (
 	MessageHandleModule interface {
 		CanSetSuccessor() bool
 		SetSuccessor(successor MessageHandleModule)
-		ProcessMessage(ctx *Context, message *Message, state ProcessingState, recover *Recover) error
+		ProcessMessage(ctx *Context, message *Message, state ProcessingState, recover *Recover)
 		OnInitComplete()
 		OnStart(ctx context.Context) error
 		OnStop(ctx context.Context) error
@@ -92,7 +92,12 @@ type (
 	}
 
 	MessageHandler interface {
-		ProcessMessage(ctx *Context, message *Message) error
+		ProcessMessage(ctx *Context, message *Message)
+	}
+
+	MessageErrorHandler interface {
+		MessageHandler
+		ProcessMessageError(ctx *Context, message *Message, err interface{})
 	}
 
 	ErrorHandler func(ctx *Context, message *Message, err interface{})

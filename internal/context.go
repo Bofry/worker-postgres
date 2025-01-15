@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"sync"
 	"sync/atomic"
@@ -25,6 +24,7 @@ type Context struct {
 	errExisted     int32
 	logger         *log.Logger
 	disableLogging bool
+	aborted        bool
 
 	invalidMessageHandler MessageHandler
 	invalidMessageSent    int32
@@ -52,6 +52,14 @@ func (c *Context) Err() error {
 		return c.context.Err()
 	}
 	return nil
+}
+
+func (c *Context) Break() {
+	c.aborted = true
+}
+
+func (c *Context) IsAborted() bool {
+	return c.aborted
 }
 
 func (c *Context) CatchErr(err error) {
@@ -83,6 +91,9 @@ func (c *Context) Value(key any) any {
 
 // SetValue implements trace.ValueContext.
 func (c *Context) SetValue(key interface{}, value interface{}) {
+	if c.aborted {
+		return
+	}
 	if key == nil {
 		return
 	}
@@ -100,15 +111,22 @@ func (c *Context) Logger() *log.Logger {
 	return c.logger
 }
 
-func (c *Context) IsRecordingLog() bool {
+func (c *Context) CanRecordingLog() bool {
 	return !c.disableLogging
 }
 
 func (c *Context) RecordingLog(v bool) {
+	if c.aborted {
+		return
+	}
+
 	c.disableLogging = !v
 }
 
 func (c *Context) InvalidMessage(message *Message) error {
+	if c.aborted {
+		return nil
+	}
 	if !atomic.CompareAndSwapInt32(&c.invalidMessageSent, 0, 1) {
 		c.logger.Fatal("invalid operation; message has already been sent to InvalidMessageHandler")
 	}
@@ -123,7 +141,6 @@ func (c *Context) InvalidMessage(message *Message) error {
 
 		sp := tr.Start(prevSpan.Context(), __INVALID_MESSAGE_SPAN_NAME)
 		defer func() {
-			fmt.Println("(c *Context) InvalidMessage()")
 			sp.End()
 		}()
 
@@ -135,8 +152,7 @@ func (c *Context) InvalidMessage(message *Message) error {
 		}
 		trace.SpanToContext(ctx, sp)
 
-		err := c.invalidMessageHandler.ProcessMessage(ctx, message)
-		_ = err // we won't process the error on InvalidMessageHandler
+		c.invalidMessageHandler.ProcessMessage(ctx, message)
 	}
 	return nil
 }
@@ -152,5 +168,6 @@ func (c *Context) clone() *Context {
 		logger:                c.logger,
 		invalidMessageHandler: c.invalidMessageHandler,
 		values:                c.values,
+		aborted:               c.aborted,
 	}
 }

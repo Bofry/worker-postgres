@@ -17,7 +17,6 @@ import (
 var _ host.Host = new(PostgresWorker)
 
 type PostgresWorker struct {
-	DisableAutoAck                bool
 	Config                        *Config
 	ReplicationSlotSourceProvider CreateReplicationSlotSourceProvider
 
@@ -166,8 +165,7 @@ func (w *PostgresWorker) init() {
 }
 
 func (w *PostgresWorker) registerSlots() error {
-
-	fmt.Printf("ReplicationSlotSourceProvider:: %+v\n", w.ReplicationSlotSourceProvider.Sources())
+	w.logger.Printf("ReplicationSlotSourceProvider:: %+v\n", w.ReplicationSlotSourceProvider.Sources())
 
 	conn, err := postgres.NewConn(w.Config)
 	if err != nil {
@@ -175,8 +173,8 @@ func (w *PostgresWorker) registerSlots() error {
 	}
 	defer conn.Close(context.Background())
 
+	w.logger.Printf("CreateReplicationSlot")
 	err = postgres.CreateReplicationSlot(context.Background(), conn, w.ReplicationSlotSourceProvider)
-	fmt.Println("postgres.CreateReplicationSlot")
 	if err != nil {
 		if !postgres.IsDuplicateObjectError(err) {
 			return err
@@ -188,7 +186,6 @@ func (w *PostgresWorker) registerSlots() error {
 func (w *PostgresWorker) configConsumer() {
 	instance := &postgres.Consumer{
 		Config:         w.Config,
-		DisableAutoAck: w.DisableAutoAck,
 		Logger:         w.logger,
 		MessageHandler: w.receiveMessage,
 		EventHandler:   nil,
@@ -198,7 +195,7 @@ func (w *PostgresWorker) configConsumer() {
 	w.consumer = instance
 }
 
-func (w *PostgresWorker) receiveMessage(message *Message) error {
+func (w *PostgresWorker) receiveMessage(message *Message) {
 	ctx := &Context{
 		consumer:              w.consumer,
 		logger:                w.logger,
@@ -212,7 +209,7 @@ func (w *PostgresWorker) receiveMessage(message *Message) error {
 	delegate := NewContextMessageDelegate(ctx)
 	delegate.configure(message)
 
-	return w.messageDispatcher.ProcessMessage(ctx, message)
+	w.messageDispatcher.ProcessMessage(ctx, message)
 }
 
 func (w *PostgresWorker) onHostError(err error) (disposed bool) {

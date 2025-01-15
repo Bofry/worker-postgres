@@ -40,6 +40,10 @@ github.com/Bofry/lib-postgres-stream v0.0.0-20250107090921-9b63ee41fed9 h1:QJz5p
 github.com/Bofry/lib-postgres-stream v0.0.0-20250107090921-9b63ee41fed9/go.mod h1:I5JJFFbDNgbVXEByfEkdCT27UfMngu3mxF870wTEaeE=
 github.com/Bofry/lib-postgres-stream v0.0.0-20250107094734-4b5175fe65d2 h1:SGKzRDY4y5XVL0EjKkdYc4YpEwUm0yW5uYyNbemK55Q=
 github.com/Bofry/lib-postgres-stream v0.0.0-20250107094734-4b5175fe65d2/go.mod h1:I5JJFFbDNgbVXEByfEkdCT27UfMngu3mxF870wTEaeE=
+github.com/Bofry/lib-postgres-stream v0.0.0-20250115034717-db0e5dea1322 h1:SlWAqAj6J3OqEVONUYEqBE6A7uXAvFXuO7oxQ4eUo+Y=
+github.com/Bofry/lib-postgres-stream v0.0.0-20250115034717-db0e5dea1322/go.mod h1:I5JJFFbDNgbVXEByfEkdCT27UfMngu3mxF870wTEaeE=
+github.com/Bofry/lib-postgres-stream v0.0.0-20250115085534-c9983fd49411 h1:ouCYY46AxxihIYDdR2OMJhz3849sgK1H/mSBclyHyNA=
+github.com/Bofry/lib-postgres-stream v0.0.0-20250115085534-c9983fd49411/go.mod h1:I5JJFFbDNgbVXEByfEkdCT27UfMngu3mxF870wTEaeE=
 github.com/Bofry/structproto v0.2.1 h1:rcYqwH0dyEyAsfLsfejL/7YF9inIxnT/Y7uQfebPXWQ=
 github.com/Bofry/structproto v0.2.1/go.mod h1:j4dn8G1MhaBWHQBljNOkaDk8D5aW3Y/+Q/3hxQRNPKo=
 github.com/Bofry/trace v0.2.0-alpha.20230703152613 h1:UzN4zpq2+2+E8oIs9GpDFlH/7k6oFIcDX07zmgT8Do8=

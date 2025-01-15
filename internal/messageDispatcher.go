@@ -51,7 +51,7 @@ func (d *MessageDispatcher) Slots() []string {
 	return nil
 }
 
-func (d *MessageDispatcher) ProcessMessage(ctx *Context, message *Message) error {
+func (d *MessageDispatcher) ProcessMessage(ctx *Context, message *Message) {
 	// start tracing
 	var (
 		handlerID = d.Router.FindHandlerComponentID(message.Slot)
@@ -77,7 +77,7 @@ func (d *MessageDispatcher) ProcessMessage(ctx *Context, message *Message) error
 	// register observer into message
 	d.MessageObserverService.RegisterMessageObservers(message, handlerID)
 
-	return d.MessageHandleService.ProcessMessage(ctx, message, processingState, new(Recover))
+	d.MessageHandleService.ProcessMessage(ctx, message, processingState, new(Recover))
 }
 
 func (d *MessageDispatcher) subscribe(consumer *postgres.Consumer) error {
@@ -93,14 +93,23 @@ func (d *MessageDispatcher) subscribe(consumer *postgres.Consumer) error {
 	return consumer.Subscribe(offsets...)
 }
 
-func (d *MessageDispatcher) internalProcessMessage(ctx *Context, message *Message, state ProcessingState, recover *Recover) error {
-	return recover.
+func (d *MessageDispatcher) internalProcessMessage(ctx *Context, message *Message, state ProcessingState, recover *Recover) {
+	var handler MessageHandler
+
+	recover.
 		Defer(func(err interface{}) {
 			if err != nil {
-				d.processError(ctx, message, err)
+				if handler != nil {
+					if h, ok := handler.(MessageErrorHandler); ok {
+						h.ProcessMessageError(ctx, message, err)
+					}
+				}
+				if !ctx.aborted {
+					d.processError(ctx, message, err)
+				}
 			}
 		}).
-		Do(func(finalizer Finalizer) error {
+		Do(func(finalizer Finalizer) {
 			var (
 				tr   *trace.SeverityTracer = state.Tracer
 				sp   *trace.SeveritySpan   = state.Span
@@ -142,18 +151,18 @@ func (d *MessageDispatcher) internalProcessMessage(ctx *Context, message *Messag
 				trace.MessageID(message.StartLSN().String()),
 			)
 
-			handler := d.Router.Get(message.Slot)
+			handler = d.Router.Get(message.Slot)
 			if handler != nil {
-				err := handler.ProcessMessage(ctx, message)
+				handler.ProcessMessage(ctx, message)
 				{
 					reply := GlobalContextHelper.ExtractReplyCode(ctx)
 					if reply == UNSET {
 						GlobalContextHelper.InjectReplyCode(ctx, FAIL)
 					}
 				}
-				return err
+				return
 			}
-			return ctx.InvalidMessage(message)
+			ctx.InvalidMessage(message)
 		})
 }
 

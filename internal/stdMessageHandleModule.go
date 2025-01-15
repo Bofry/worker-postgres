@@ -41,8 +41,8 @@ func (s *StdMessageHandleModule) OnStop(ctx context.Context) error {
 }
 
 // ProcessMessage implements MessageHandleModule.
-func (m *StdMessageHandleModule) ProcessMessage(ctx *Context, message *postgres.Message, state ProcessingState, recover *Recover) error {
-	return m.dispatcher.internalProcessMessage(ctx, message, state, recover)
+func (m *StdMessageHandleModule) ProcessMessage(ctx *Context, message *postgres.Message, state ProcessingState, recover *Recover) {
+	m.dispatcher.internalProcessMessage(ctx, message, state, recover)
 }
 
 // SetSuccessor implements MessageHandleModule.

@@ -13,7 +13,7 @@ var _ MessageHandler = RestrictedForwardMessageHandler(0)
 type RestrictedForwardMessageHandler int
 
 // ProcessMessage implements MessageHandler.
-func (h RestrictedForwardMessageHandler) ProcessMessage(ctx *Context, message *Message) error {
+func (h RestrictedForwardMessageHandler) ProcessMessage(ctx *Context, message *Message) {
 	var code = int(h)
 	if msg, ok := _RestrictedForwardMessageErrorMap[code]; ok {
 		panic(RestrictedOperationError(msg))

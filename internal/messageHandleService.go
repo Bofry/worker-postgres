@@ -25,11 +25,10 @@ func (s *MessageHandleService) Register(module MessageHandleModule) {
 	s.modules = append(s.modules, module)
 }
 
-func (s *MessageHandleService) ProcessMessage(ctx *Context, message *Message, state ProcessingState, recover *Recover) error {
+func (s *MessageHandleService) ProcessMessage(ctx *Context, message *Message, state ProcessingState, recover *Recover) {
 	if handler := s.first(); handler != nil {
-		return handler.ProcessMessage(ctx, message, state, recover)
+		handler.ProcessMessage(ctx, message, state, recover)
 	}
-	return nil
 }
 
 func (s *MessageHandleService) first() MessageHandleModule {

@@ -50,7 +50,6 @@ func (h *Host) Init(conf *Config) {
 		fmt.Println("ReplicationSlotSourceProvider::", h.ReplicationSlotSourceProvider.Sources())
 	}
 
-	h.DisableAutoAck = false
 	h.Config = &config
 }
 

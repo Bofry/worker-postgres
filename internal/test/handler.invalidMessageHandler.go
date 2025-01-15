@@ -14,6 +14,6 @@ type InvalidMessageHandler struct {
 }
 
 // ProcessMessage implements internal.MessageHandler.
-func (i *InvalidMessageHandler) ProcessMessage(ctx *internal.Context, message *postgres.Message) error {
+func (i *InvalidMessageHandler) ProcessMessage(ctx *internal.Context, message *postgres.Message) {
 	panic("unimplemented")
 }

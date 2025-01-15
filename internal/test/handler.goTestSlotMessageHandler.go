@@ -27,15 +27,15 @@ func (h *GoTestSlotMessageHandler) Init() {
 }
 
 // ProcessMessage implements internal.MessageHandler.
-func (g *GoTestSlotMessageHandler) ProcessMessage(ctx *internal.Context, message *postgres.Message) error {
+func (g *GoTestSlotMessageHandler) ProcessMessage(ctx *internal.Context, message *postgres.Message) {
 	ctx.Logger().Printf("Message on %s (%s): [%s] %v\n", message.Slot, message.StartLSN(), message.StartLSN(), string(message.Body()))
 
 	sp := trace.SpanFromContext(ctx)
 	sp.Argv(message)
 
-	// message.Ack()
+	panic("some error")
 
-	return nil
+	message.Ack()
 }
 
 // MessageObserverTypes implements internal.MessageObserverAffair.
