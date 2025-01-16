@@ -99,8 +99,52 @@ func TestStartup(t *testing.T) {
 			postgres.UseMessageManager(&MessageManager{}),
 			postgres.UseErrorHandler(func(ctx *postgres.Context, msg *postgres.Message, err interface{}) {
 				t.Logf("catch err: %v", err)
+				ctx.InvalidMessage(msg)
 			}),
 			postgres.UseTracing(false),
+		).
+		ConfigureConfiguration(func(service *config.ConfigurationService) {
+			service.
+				LoadEnvironmentVariables("").
+				LoadYamlFile("config.yaml").
+				LoadCommandArguments()
+
+			t.Logf("%+v\n", app.Config)
+		})
+
+	runCtx, cancel := context.WithTimeout(context.Background(), 13*time.Second)
+	defer cancel()
+	if err := starter.Start(runCtx); err != nil {
+		t.Error(err)
+	}
+
+	select {
+	case <-runCtx.Done():
+		if err := starter.Stop(context.Background()); err != nil {
+			t.Error(err)
+		}
+	}
+
+	// assert app.Config
+	{
+		// conf := app.Config
+		// var expectedNsqAddress string = os.Getenv("TEST_NSQLOOKUPD_ADDRESS")
+		// if conf.NsqAddress != expectedNsqAddress {
+		// 	t.Errorf("assert 'Config.NsqAddress':: expected '%v', got '%v'", expectedNsqAddress, conf.NsqAddress)
+		// }
+	}
+}
+
+func TestStartup_UseTracing(t *testing.T) {
+	app := App{}
+	starter := postgres.Startup(&app).
+		Middlewares(
+			postgres.UseMessageManager(&MessageManager{}),
+			postgres.UseErrorHandler(func(ctx *postgres.Context, msg *postgres.Message, err interface{}) {
+				t.Logf("catch err: %v", err)
+				ctx.InvalidMessage(msg)
+			}),
+			postgres.UseTracing(true),
 		).
 		ConfigureConfiguration(func(service *config.ConfigurationService) {
 			service.

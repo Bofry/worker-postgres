@@ -28,14 +28,16 @@ func (h *GoTestSlotMessageHandler) Init() {
 
 // ProcessMessage implements internal.MessageHandler.
 func (g *GoTestSlotMessageHandler) ProcessMessage(ctx *internal.Context, message *postgres.Message) {
-	ctx.Logger().Printf("Message on %s (%s): [%s] %v\n", message.Slot, message.StartLSN(), message.StartLSN(), string(message.Body()))
+	ctx.Logger().Printf("GoTestSlotMessageHandler.Message on %s (%s): [%s] %v\n", message.Slot, message.StartLSN(), message.StartLSN(), string(message.Body()))
 
 	sp := trace.SpanFromContext(ctx)
 	sp.Argv(message)
 
-	panic("some error")
+	fmt.Println("ctx.IsAborted()::", ctx.IsAborted())
 
-	message.Ack()
+	ctx.InvalidMessage(message)
+
+	// panic("some error")
 }
 
 // MessageObserverTypes implements internal.MessageObserverAffair.

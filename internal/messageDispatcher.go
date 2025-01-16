@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	postgres "github.com/Bofry/lib-postgres-stream"
@@ -20,8 +21,6 @@ type MessageDispatcher struct {
 	InvalidMessageHandler MessageHandler
 
 	SlotSet map[string]SlotOffset
-
-	invalidMessageHandlerWrapper MessageHandler
 }
 
 func (d *MessageDispatcher) SlotOffsets() []SlotOffset {
@@ -72,7 +71,7 @@ func (d *MessageDispatcher) ProcessMessage(ctx *Context, message *Message) {
 	}
 
 	// set invalidMessageHandler
-	ctx.invalidMessageHandler = d.invalidMessageHandlerWrapper
+	ctx.invalidMessageHandler = d.InvalidMessageHandler
 
 	// register observer into message
 	d.MessageObserverService.RegisterMessageObservers(message, handlerID)
@@ -121,21 +120,27 @@ func (d *MessageDispatcher) internalProcessMessage(ctx *Context, message *Messag
 			trace.SpanToContext(ctx, sp)
 
 			finalizer.Add(func(err interface{}) {
+				var (
+					reply = GlobalContextHelper.ExtractReplyCode(ctx)
+				)
+
 				if err != nil {
 					if e, ok := err.(error); ok {
 						sp.Err(e)
 					} else if e, ok := err.(string); ok {
-						sp.Err(fmt.Errorf(e))
+						sp.Err(errors.New(e))
 					} else if e, ok := err.(fmt.Stringer); ok {
-						sp.Err(fmt.Errorf(e.String()))
+						sp.Err(errors.New(e.String()))
 					} else {
 						sp.Err(fmt.Errorf("%+v", err))
 					}
+
+					GlobalContextHelper.InjectReplyCode(ctx, FAIL)
 				}
 
-				var (
-					reply = GlobalContextHelper.ExtractReplyCode(ctx)
-				)
+				if reply == UNSET {
+					GlobalContextHelper.InjectReplyCode(ctx, PASS)
+				}
 
 				switch reply {
 				case PASS:
@@ -154,12 +159,6 @@ func (d *MessageDispatcher) internalProcessMessage(ctx *Context, message *Messag
 			handler = d.Router.Get(message.Slot)
 			if handler != nil {
 				handler.ProcessMessage(ctx, message)
-				{
-					reply := GlobalContextHelper.ExtractReplyCode(ctx)
-					if reply == UNSET {
-						GlobalContextHelper.InjectReplyCode(ctx, FAIL)
-					}
-				}
 				return
 			}
 			ctx.InvalidMessage(message)
