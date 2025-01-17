@@ -31,10 +31,11 @@ type (
 	MessageObserver       = internal.MessageObserver
 	MessageObserverAffair = internal.MessageObserverAffair
 
-	MessageHandler = internal.MessageHandler
-	Worker         = internal.PostgresWorker
-	Context        = internal.Context
-	ReplyCode      = internal.ReplyCode
+	MessageHandler      = internal.MessageHandler
+	MessageErrorHandler = internal.MessageErrorHandler
+	Worker              = internal.PostgresWorker
+	Context             = internal.Context
+	ReplyCode           = internal.ReplyCode
 
 	ErrorHandler = internal.ErrorHandler
 )

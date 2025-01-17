@@ -98,6 +98,11 @@ func (d *MessageDispatcher) internalProcessMessage(ctx *Context, message *Messag
 	recover.
 		Defer(func(err interface{}) {
 			if err != nil {
+				// throw fatal error
+				if ex, ok := err.(*Exception); ok {
+					panic(ex.err)
+				}
+				// send to MessageErrorHandler
 				if handler != nil {
 					if h, ok := handler.(MessageErrorHandler); ok {
 						h.ProcessMessageError(ctx, message, err)
