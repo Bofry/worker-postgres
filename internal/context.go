@@ -157,6 +157,16 @@ func (c *Context) InvalidMessage(message *Message) error {
 	return nil
 }
 
+func (c *Context) Pause() error {
+	c.consumer.Pause()
+	return nil
+}
+
+func (c *Context) Resume() error {
+	c.consumer.Resume()
+	return nil
+}
+
 func (c *Context) Status() StatusCode {
 	return GlobalContextHelper.ExtractReplyCode(c)
 }

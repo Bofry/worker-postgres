@@ -3,6 +3,7 @@ package test
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/Bofry/trace"
 	postgres "github.com/Bofry/worker-postgres"
@@ -33,9 +34,10 @@ func (g *GoTestSlotMessageHandler) ProcessMessage(ctx *internal.Context, message
 	sp := trace.SpanFromContext(ctx)
 	sp.Argv(message)
 
-	fmt.Println("ctx.IsAborted()::", ctx.IsAborted())
-
-	ctx.InvalidMessage(message)
+	ctx.Pause()
+	time.AfterFunc(time.Second*2, func() {
+		ctx.Resume()
+	})
 
 	// panic("some error")
 }
