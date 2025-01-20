@@ -108,6 +108,7 @@ func (d *MessageDispatcher) internalProcessMessage(ctx *Context, message *Messag
 						h.ProcessMessageError(ctx, message, err)
 					}
 				}
+				// send error to outer
 				if !ctx.aborted {
 					d.processError(ctx, message, err)
 				}
