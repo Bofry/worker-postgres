@@ -7,8 +7,8 @@ toolchain go1.22.3
 require (
 	github.com/Bofry/config v0.2.2 // indirect
 	github.com/Bofry/host v0.2.7 // indirect
-	github.com/Bofry/lib-postgres-stream v0.0.0-20250117153152-ac00867afcb4 // indirect
-	github.com/Bofry/structproto v0.2.1 // indirect
+	github.com/Bofry/lib-postgres-stream v0.0.0-20250121081246-bef4dd063f8d // indirect
+	github.com/Bofry/structproto v0.2.2 // indirect
 	github.com/Bofry/trace v0.2.1 // indirect
 	github.com/Bofry/types v0.1.0 // indirect
 	github.com/cstockton/go-conv v0.0.0-20170524002450-66a2b2ba36e1 // indirect
