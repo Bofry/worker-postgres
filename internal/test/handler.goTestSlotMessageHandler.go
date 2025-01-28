@@ -37,7 +37,7 @@ func (g *GoTestSlotMessageHandler) ProcessMessage(ctx *internal.Context, message
 	// time.AfterFunc(time.Second*2, func() {
 	// 	ctx.Resume()
 	// })
-	ctx.Throw("some errors occurred")
+	// ctx.Throw("some errors occurred")
 
 	// panic("some error")
 }
